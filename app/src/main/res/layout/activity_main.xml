@@ -1,19 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".MainActivity"
+        android:layout_height="match_parent">
 
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World!"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <ir.alirezaiyan.progressbar.LevelProgressBar
+            android:id="@+id/p1"
+            android:layout_width="150dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:layout_height="150dp"
+            app:spb_background_progress_color="#E22D9D"
+            app:spb_is_enable="true"
+            app:spb_unprogress_color="#E6E6E6"
+            app:spb_stroke_with="10"
+            app:spb_is_step_progress="true"
+            app:spb_level="level6"
+            app:spb_text_level_color="#fff"
+            app:spb_text_title_color="#040504"/>
+
+
+    <LinearLayout
+            android:layout_below="@+id/p1"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_marginTop="50dp"
+            android:orientation="vertical"
+            android:layout_height="wrap_content">
+
+        <CheckBox
+                android:id="@+id/p1IsEnable"
+                android:text="Is Enable"
+                android:layout_marginTop="10dp"
+                android:checked="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:ignore="HardcodedText"/>
+
+        <CheckBox
+                android:id="@+id/p1IsStepBar"
+                android:text="Is Step Bar"
+                android:layout_marginTop="10dp"
+                android:checked="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:ignore="HardcodedText"/>
+
+        <TextView
+                android:gravity="start"
+                android:layout_marginTop="10dp"
+                android:paddingStart="10dp"
+                android:layout_width="match_parent"
+                android:text="Level"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                tools:ignore="HardcodedText,RtlSymmetry"/>
+
+        <SeekBar
+                android:id="@+id/p1LevelSeek"
+                android:indeterminate="false"
+                android:progress="5"
+                android:max="10"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+
+        <TextView
+                android:gravity="start"
+                android:paddingStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:text="Stroke width"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                tools:ignore="HardcodedText,RtlSymmetry"/>
+
+        <SeekBar
+                android:id="@+id/p1LevelSeekStroke"
+                android:indeterminate="false"
+                android:progress="10"
+                android:max="50"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

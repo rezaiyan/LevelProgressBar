@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="SpeedProgressBar">
+        <attr name="spb_level">
+            <enum name="level1" value="1" />
+            <enum name="level2" value="2" />
+            <enum name="level3" value="3" />
+            <enum name="level4" value="4" />
+            <enum name="level5" value="5" />
+            <enum name="level6" value="6" />
+            <enum name="level7" value="7" />
+            <enum name="level8" value="8" />
+            <enum name="level9" value="9" />
+            <enum name="level10" value="10" />
+        </attr>
+        <attr name="spb_stroke_with" format="integer" />
+
+        <attr name="spb_is_step_progress" format="boolean" />
+        <attr name="spb_is_enable" format="boolean" />
+        <attr name="spb_text_title" format="string" />
+        <attr name="spb_font" format="integer" />
+
+        <attr name="spb_text_level_color" format="color" />
+        <attr name="spb_text_title_color" format="color" />
+        <attr name="spb_background_progress_color" format="color" />
+        <attr name="spb_progress_color" format="color" />
+        <attr name="spb_unprogress_color" format="color" />
+
+    </declare-styleable>
+
+</resources>
