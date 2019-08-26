@@ -3,11 +3,8 @@ package ir.alirezaiyan.progressbar
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewOutlineProvider
-import androidx.annotation.RequiresApi
 import androidx.core.graphics.ColorUtils
 import kotlin.math.min
 
