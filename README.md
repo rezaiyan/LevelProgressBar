@@ -10,7 +10,7 @@ A custom view with circular step progress level
 Add the dependency to your app build.gradle file:
 
 ```
-implementation "ir.alirezaiyan:levelprogressbar:1.0.0"
+implementation "ir.alirezaiyan:levelprogressbar:1.0.1"
 ```
 
 ## Usage
