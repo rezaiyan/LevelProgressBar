@@ -55,7 +55,12 @@ class LevelProgressBar @JvmOverloads constructor(
 
     }
 
+    private var continuousSwipeAngle = 0f
+    private var continuousStartAngle = 0f
     private var speed = DEFAULT_SPEED
+    private var progress = 0
+    private var angle = 0F
+    private var textOffset = 0F
 
     private var textTitle: String? = DEFAULT_TEXT_TITLE
 
@@ -82,7 +87,7 @@ class LevelProgressBar @JvmOverloads constructor(
         }
     var radius = 50f
 
-    private val mBorderRect = RectF()
+    private val borderRect = RectF()
 
     private var progressPaint = Paint()
     private var unProgressPaint = Paint()
@@ -170,7 +175,7 @@ class LevelProgressBar @JvmOverloads constructor(
             return
         }
 
-        mBorderRect.set(calculateBounds())
+        borderRect.set(calculateBounds())
 
         textLevelPaint.apply {
             isAntiAlias = true
@@ -216,51 +221,54 @@ class LevelProgressBar @JvmOverloads constructor(
             unProgressPaint.alpha = OPACITY
         }
 
+        progress = (speed * 10).toInt()
+        angle = (DEFAULT_TOTAL_ANGLE * progress / DEFAULT_MAX_PROGRESS).toFloat()
+
+        val textHeight = textLevelPaint.descent() - textLevelPaint.ascent()
+        textOffset = textHeight / 2 - textLevelPaint.descent()
+        continuousSwipeAngle = DEFAULT_START_ANGLE + angle
+        continuousStartAngle = DEFAULT_TOTAL_ANGLE - angle
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        canvas.drawCircle(mBorderRect.centerX(), mBorderRect.centerY(), radius, backgroundPaint)
+        canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), radius, backgroundPaint)
 
-        val progress = speed * 10
-        val angle = DEFAULT_TOTAL_ANGLE * progress / DEFAULT_MAX_PROGRESS
 
         //    step progress
         if (isStepProgress) {
             var step = 10
             while (step <= DEFAULT_TOTAL_ANGLE) {
                 if (step <= angle) {
-                    canvas.drawArc(mBorderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, progressPaint)
+                    canvas.drawArc(borderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, progressPaint)
                 } else {
-                    canvas.drawArc(mBorderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, unProgressPaint)
+                    canvas.drawArc(borderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, unProgressPaint)
                 }
                 step += 30
             }
         } else {
 
 
-            canvas.drawArc(mBorderRect, DEFAULT_START_ANGLE.toFloat(), angle, false, progressPaint)
+            canvas.drawArc(borderRect, DEFAULT_START_ANGLE.toFloat(), angle, false, progressPaint)
 
             if (angle < DEFAULT_TOTAL_ANGLE) {
 
                 canvas.drawArc(
-                    mBorderRect,
-                    (DEFAULT_START_ANGLE + angle),
-                    (DEFAULT_TOTAL_ANGLE - angle),
+                    borderRect,
+                    continuousSwipeAngle,
+                    continuousStartAngle,
                     false,
                     unProgressPaint
                 )
             }
         }
 
-        val textHeight = textLevelPaint.descent() - textLevelPaint.ascent()
-        val textOffset = textHeight / 2 - textLevelPaint.descent()
 
         //levelTitle
         canvas
             .drawText(
-                speed.toInt().toString(), mBorderRect.centerX(), mBorderRect.centerY() + textOffset,
+                speed.toInt().toString(), borderRect.centerX(), borderRect.centerY() + textOffset,
                 textLevelPaint
             )
 

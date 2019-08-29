@@ -29,8 +29,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        p1IsEnable.setOnCheckedChangeListener { compoundButton, b -> p1.setEnable(b) }
-        p1IsStepBar.setOnCheckedChangeListener { compoundButton, b -> p1.setIsStep(b) }
+        p1IsEnable.setOnCheckedChangeListener { _, b -> p1.setEnable(b) }
+        p1IsStepBar.setOnCheckedChangeListener { _, b -> p1.setIsStep(b) }
 
         p1LevelSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
