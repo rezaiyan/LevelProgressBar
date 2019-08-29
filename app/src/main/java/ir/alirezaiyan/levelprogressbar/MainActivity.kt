@@ -6,7 +6,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.SeekBar
 
 
-
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,12 +13,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        p1IsEnable.setOnCheckedChangeListener { compoundButton, b ->  p1.setEnable(b) }
-        p1IsStepBar.setOnCheckedChangeListener { compoundButton, b ->  p1.setIsStep(b)}
+        p1IsEnable.setOnCheckedChangeListener { compoundButton, b -> p1.setEnable(b) }
+        p1IsStepBar.setOnCheckedChangeListener { compoundButton, b -> p1.setIsStep(b) }
 
         p1LevelSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                p1.setSpeed(progress)
+
+                if (fromUser) {
+                    p1.setProgressWithAnimation(progress.toFloat())
+                } else
+                    p1.setSpeed(progress.toFloat())
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -32,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         p1LevelSeekStroke.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                p1.setStrokeWidth(progress.toFloat())
+                p1.strokeWidth = progress.toFloat()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {

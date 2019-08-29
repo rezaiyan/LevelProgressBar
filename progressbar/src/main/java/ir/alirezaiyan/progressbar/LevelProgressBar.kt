@@ -7,6 +7,10 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.ColorUtils
 import kotlin.math.min
+import android.view.animation.DecelerateInterpolator
+import android.animation.ObjectAnimator
+import android.util.Log
+
 
 /**
  * @author ali (alirezaiyann@gmail.com)
@@ -19,7 +23,7 @@ class LevelProgressBar @JvmOverloads constructor(
 
     companion object {
 
-        const val DEFAULT_SPEED = 1
+        const val DEFAULT_SPEED = 1F
         const val DEFAULT_TEXT_TITLE = "Level"
         const val DEFAULT_START_ANGLE = 120
         const val DEFAULT_TOTAL_ANGLE = 300
@@ -53,14 +57,17 @@ class LevelProgressBar @JvmOverloads constructor(
     private var mSetupPending: Boolean = false
 
 
-    private var strokeWidth = DEFAULT_STROKE_WiDTH.toFloat()
-    private var radius = 50f
+    var strokeWidth = DEFAULT_STROKE_WiDTH.toFloat()
+        set(value) {
+            if (value < radius / 3)
+                field = value
 
-    /**
-     * Start the progress at 6 o'clock
-     */
+            setup()
+            invalidate()
+        }
+    var radius = 50f
+
     private val mBorderRect = RectF()
-    private val progressRect = RectF()
 
     private var progressPaint = Paint()
     private var unProgressPaint = Paint()
@@ -76,25 +83,30 @@ class LevelProgressBar @JvmOverloads constructor(
             0, 0
         ).apply {
             try {
-                speed = getInteger(R.styleable.SpeedProgressBar_spb_level,
+                speed = getFloat(
+                    R.styleable.SpeedProgressBar_spb_level,
                     DEFAULT_SPEED
                 )
 
                 textTitle = getString(R.styleable.SpeedProgressBar_spb_text_title)
 
-                isEnable = getBoolean(R.styleable.SpeedProgressBar_spb_is_enable,
+                isEnable = getBoolean(
+                    R.styleable.SpeedProgressBar_spb_is_enable,
                     DEFAULT_IS_ENABLE
                 )
 
-                isStepProgress = getBoolean(R.styleable.SpeedProgressBar_spb_is_step_progress,
+                isStepProgress = getBoolean(
+                    R.styleable.SpeedProgressBar_spb_is_step_progress,
                     DEFAULT_IS_ENABLE
                 )
 
-                textLevelColor = getColor(R.styleable.SpeedProgressBar_spb_text_level_color,
+                textLevelColor = getColor(
+                    R.styleable.SpeedProgressBar_spb_text_level_color,
                     DEFAULT_TEXT_LEVEL_COLOR
                 )
 
-                textTitleColor = getColor(R.styleable.SpeedProgressBar_spb_text_title_color,
+                textTitleColor = getColor(
+                    R.styleable.SpeedProgressBar_spb_text_title_color,
                     DEFAULT_TEXT_TITLE_COLOR
                 )
 
@@ -103,15 +115,18 @@ class LevelProgressBar @JvmOverloads constructor(
                     DEFAULT_TEXT_TITLE_COLOR
                 )
 
-                progressColor = getColor(R.styleable.SpeedProgressBar_spb_progress_color,
+                progressColor = getColor(
+                    R.styleable.SpeedProgressBar_spb_progress_color,
                     DEFAULT_PROGRESS_COLOR
                 )
 
-                unprogressColor = getColor(R.styleable.SpeedProgressBar_spb_unprogress_color,
+                unprogressColor = getColor(
+                    R.styleable.SpeedProgressBar_spb_unprogress_color,
                     DEFAULT_UNPROGRESS_COLOR
                 )
 
-                strokeWidth = getInteger(R.styleable.SpeedProgressBar_spb_stroke_with,
+                strokeWidth = getInteger(
+                    R.styleable.SpeedProgressBar_spb_stroke_with,
                     DEFAULT_STROKE_WiDTH
                 ).toFloat()
 
@@ -209,12 +224,15 @@ class LevelProgressBar @JvmOverloads constructor(
             }
         } else {
 
-            canvas.drawArc(mBorderRect, DEFAULT_START_ANGLE.toFloat(), angle.toFloat(), false, progressPaint)
+
+            canvas.drawArc(mBorderRect, DEFAULT_START_ANGLE.toFloat(), angle, false, progressPaint)
+
             if (angle < DEFAULT_TOTAL_ANGLE) {
+
                 canvas.drawArc(
                     mBorderRect,
-                    (DEFAULT_START_ANGLE + angle).toFloat(),
-                    (DEFAULT_TOTAL_ANGLE - angle).toFloat(),
+                    (DEFAULT_START_ANGLE + angle),
+                    (DEFAULT_TOTAL_ANGLE - angle),
                     false,
                     unProgressPaint
                 )
@@ -227,14 +245,9 @@ class LevelProgressBar @JvmOverloads constructor(
         //levelTitle
         canvas
             .drawText(
-                speed.toString(), mBorderRect.centerX(), mBorderRect.centerY() + textOffset,
+                speed.toInt().toString(), mBorderRect.centerX(), mBorderRect.centerY() + textOffset,
                 textLevelPaint
             )
-
-        //label
-        //    canvas.drawText(textTitle, mBorderRect.centerX()-50, getHeight()+50, textTitlePaint);
-
-        //    canvas.drawArc(mBorderRect, DEFAULT_START_ANGLE, angle, false, progressPaint);
 
     }
 
@@ -295,7 +308,7 @@ class LevelProgressBar @JvmOverloads constructor(
                 desiredHeight
         }
         val min = min(width, height)
-        radius = min / 2f - min / 7f
+        radius = min / 3F
 
         setMeasuredDimension(width, height)
 
@@ -327,9 +340,21 @@ class LevelProgressBar @JvmOverloads constructor(
         val left = (paddingLeft + (availableWidth - sideLength) / 2f)
         val top = (paddingTop + (availableHeight - sideLength) / 2f)
 
-        return RectF(left+20, top+20, left + sideLength-20, top + sideLength-20)
+        return RectF(
+            left + (strokeWidth / 2),
+            top + (strokeWidth / 2),
+            left + sideLength - (strokeWidth / 2),
+            top + sideLength - (strokeWidth / 2)
+        )
     }
 
+    public fun setProgressWithAnimation(progress: Float) {
+
+        val objectAnimator = ObjectAnimator.ofFloat(this, "speed", progress)
+        objectAnimator.duration = 1500
+        objectAnimator.interpolator = DecelerateInterpolator()
+        objectAnimator.start()
+    }
 
     //<editor-fold desc="Setter/Getter">
 
@@ -338,11 +363,11 @@ class LevelProgressBar @JvmOverloads constructor(
         textLevelPaint.typeface = typeface
     }
 
-    fun getSpeed(): Int {
+    fun getSpeed(): Float {
         return speed
     }
 
-    fun setSpeed(speed: Int) {
+    fun setSpeed(speed: Float) {
 
         if (this.speed == speed) {
             return
@@ -353,17 +378,6 @@ class LevelProgressBar @JvmOverloads constructor(
         invalidate()
     }
 
-
-    fun setStrokeWidth(stroke: Float) {
-
-        if (this.strokeWidth == stroke) {
-            return
-        }
-
-        this.strokeWidth = stroke
-        setup()
-        invalidate()
-    }
 
     fun getTextTitle(): String? {
         return textTitle
@@ -465,17 +479,6 @@ class LevelProgressBar @JvmOverloads constructor(
         setup()
         invalidate()
     }
-
-
-    fun setLevel(level: Int) {
-        if (this.speed == level) {
-            return
-        }
-
-        this.speed = level
-        setup()
-    }
-
 
 
     fun setIsStep(isStepProgress: Boolean) {
