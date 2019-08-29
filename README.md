@@ -2,10 +2,10 @@
 A custom view with circular step progress level  
 
 <p align="center">
-  <img src="preview.gif" height="400" width="220"/>
+  <img src="./art/preview.gif" height="400" width="220"/>
 </p>
 
-## Installtion 
+## Installtion
 
 Add the dependency to your app build.gradle file:
 
