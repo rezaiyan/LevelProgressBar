@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;28.0.3"
+yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.0"
 
 ##############################################################################
 ##
