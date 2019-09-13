@@ -1,5 +1,11 @@
 # LevelProgressBar
-A custom view with circular step progress level  
+
+[![Download](https://api.bintray.com/packages/rezaiyan/Android/levelprogressbar/images/download.svg)](https://bintray.com/rezaiyan/Android/levelprogressbar/_latestVersion)
+[![Build Status](https://travis-ci.org/rezaiyan/LevelProgressBar.svg?branch=master)](https://travis-ci.org/rezaiyan/LevelProgressBar)
+[![License](https://img.shields.io/badge/License-Apache/2.0-blue.svg)](https://github.com/badoo/Reaktive/blob/master/LICENSE)
+
+
+A custom view with circular step progress level
 
 <p align="center">
   <img src="./art/preview.png" height="400" width="220"/>
