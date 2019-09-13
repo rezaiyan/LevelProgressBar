@@ -19,11 +19,15 @@ package ir.alirezaiyan.progressbar
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import ir.alirezaiyan.progressbar.utils.getBoundRectF
+import ir.alirezaiyan.progressbar.utils.getColor
 import kotlin.math.min
 
 
@@ -48,7 +52,6 @@ class LevelProgressBar @JvmOverloads constructor(
         const val DEFAULT_TEXT_LEVEL_COLOR = Color.WHITE
         const val DEFAULT_TEXT_TITLE_COLOR = Color.BLACK
         const val DEFAULT_BACKGROUND_COLOR = Color.GREEN
-        const val DEFAULT_PROGRESS_COLOR = Color.BLUE
         const val DEFAULT_UNPROGRESS_COLOR = Color.GRAY
         const val DEFAULT_IS_ENABLE = true
         const val DEFAULT_IS_STEP_PROGRESS = false
@@ -66,8 +69,7 @@ class LevelProgressBar @JvmOverloads constructor(
 
     private var textLevelColor = DEFAULT_TEXT_LEVEL_COLOR
     private var textTitleColor = DEFAULT_TEXT_TITLE_COLOR
-    private var backgroundProgressColor = DEFAULT_BACKGROUND_COLOR
-    private var progressColor = DEFAULT_PROGRESS_COLOR
+    private var progressColor = DEFAULT_BACKGROUND_COLOR
     private var unprogressColor = DEFAULT_UNPROGRESS_COLOR
 
     private var isEnable = DEFAULT_IS_ENABLE
@@ -76,7 +78,14 @@ class LevelProgressBar @JvmOverloads constructor(
     private var mReady: Boolean = false
     private var mSetupPending: Boolean = false
 
+    private lateinit var bitmapShader: BitmapShader
+    private var bitmap: Bitmap? = null
+    private val mShaderMatrix = Matrix()
+    private var bitmapWidth: Int = 0
+    private var bitmapHeight: Int = 0
+    private val drawableRect = RectF()
 
+    private var radius = 50
     var strokeWidth = DEFAULT_STROKE_WiDTH.toFloat()
         set(value) {
             if (value < radius / 3)
@@ -85,7 +94,6 @@ class LevelProgressBar @JvmOverloads constructor(
             setup()
             invalidate()
         }
-    var radius = 50f
 
     private val borderRect = RectF()
 
@@ -130,14 +138,9 @@ class LevelProgressBar @JvmOverloads constructor(
                     DEFAULT_TEXT_TITLE_COLOR
                 )
 
-                backgroundProgressColor = getColor(
-                    R.styleable.SpeedProgressBar_spb_background_progress_color,
-                    DEFAULT_TEXT_TITLE_COLOR
-                )
-
                 progressColor = getColor(
-                    R.styleable.SpeedProgressBar_spb_progress_color,
-                    DEFAULT_PROGRESS_COLOR
+                    R.styleable.SpeedProgressBar_spb_background_color,
+                    DEFAULT_TEXT_TITLE_COLOR
                 )
 
                 unprogressColor = getColor(
@@ -149,6 +152,11 @@ class LevelProgressBar @JvmOverloads constructor(
                     R.styleable.SpeedProgressBar_spb_stroke_with,
                     DEFAULT_STROKE_WiDTH
                 ).toFloat()
+
+                getDrawable(R.styleable.SpeedProgressBar_spb_src)?.let {
+                    bitmap = (it as BitmapDrawable).bitmap
+                    progressColor = bitmap.getColor()
+                }
 
             } finally {
                 recycle()
@@ -175,25 +183,25 @@ class LevelProgressBar @JvmOverloads constructor(
             return
         }
 
-        borderRect.set(calculateBounds())
+        borderRect.set(getBoundRectF(strokeWidth))
 
         textLevelPaint.apply {
             isAntiAlias = true
             textAlign = Paint.Align.CENTER
-            textSize = radius
+            textSize = radius.toFloat()
             color = textLevelColor
         }
 
         textTitlePaint.apply {
             isAntiAlias = true
             textAlign = Paint.Align.CENTER
-            textSize = radius
+            textSize = radius.toFloat()
             color = textTitleColor
         }
 
         progressPaint.apply {
             isAntiAlias = true
-            color = ColorUtils.blendARGB(backgroundProgressColor, Color.BLACK, 0.2f)
+            color = ColorUtils.blendARGB(progressColor, Color.BLACK, 0.2f)
             style = Paint.Style.STROKE
             strokeWidth = this@LevelProgressBar.strokeWidth
             strokeCap = if (isStepProgress) Paint.Cap.ROUND else Paint.Cap.BUTT
@@ -210,7 +218,7 @@ class LevelProgressBar @JvmOverloads constructor(
 
         backgroundPaint.apply {
             isAntiAlias = true
-            color = backgroundProgressColor
+            color = progressColor
         }
 
         if (!isEnable) {
@@ -228,12 +236,33 @@ class LevelProgressBar @JvmOverloads constructor(
         textOffset = textHeight / 2 - textLevelPaint.descent()
         continuousSwipeAngle = DEFAULT_START_ANGLE + angle
         continuousStartAngle = DEFAULT_TOTAL_ANGLE - angle
+
+        bitmap?.let {
+
+            bitmapHeight = it.height
+            bitmapWidth = it.width
+
+            bitmapShader = BitmapShader(it, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+
+            backgroundPaint.shader = bitmapShader
+
+            drawableRect.set(borderRect)
+
+            updateShaderMatrix()
+
+        }
+
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), radius, backgroundPaint)
+        canvas.drawCircle(
+            borderRect.centerX(),
+            borderRect.centerY(),
+            radius - strokeWidth,
+            backgroundPaint
+        )
 
 
         //    step progress
@@ -241,9 +270,21 @@ class LevelProgressBar @JvmOverloads constructor(
             var step = 10
             while (step <= DEFAULT_TOTAL_ANGLE) {
                 if (step <= angle) {
-                    canvas.drawArc(borderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, progressPaint)
+                    canvas.drawArc(
+                        borderRect,
+                        (DEFAULT_START_ANGLE + step).toFloat(),
+                        10f,
+                        false,
+                        progressPaint
+                    )
                 } else {
-                    canvas.drawArc(borderRect, (DEFAULT_START_ANGLE + step).toFloat(), 10f, false, unProgressPaint)
+                    canvas.drawArc(
+                        borderRect,
+                        (DEFAULT_START_ANGLE + step).toFloat(),
+                        10f,
+                        false,
+                        unProgressPaint
+                    )
                 }
                 step += 30
             }
@@ -266,11 +307,16 @@ class LevelProgressBar @JvmOverloads constructor(
 
 
         //levelTitle
-        canvas
-            .drawText(
-                speed.toInt().toString(), borderRect.centerX(), borderRect.centerY() + textOffset,
-                textLevelPaint
-            )
+        if (bitmap == null) {
+            canvas
+                .drawText(
+                    speed.toInt().toString(),
+                    borderRect.centerX(),
+                    borderRect.centerY() + textOffset,
+                    textLevelPaint
+                )
+        }
+
 
     }
 
@@ -305,8 +351,8 @@ class LevelProgressBar @JvmOverloads constructor(
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        val desiredWidth = 80
-        val desiredHeight = 80
+        val desiredWidth = (width + strokeWidth + paddingRight + paddingLeft).toInt()
+        val desiredHeight = (height + strokeWidth + paddingTop + paddingBottom).toInt()
 
         val width: Int
         val height: Int
@@ -331,7 +377,7 @@ class LevelProgressBar @JvmOverloads constructor(
                 desiredHeight
         }
         val min = min(width, height)
-        radius = min / 3F
+        radius = (min / 2.5).toInt()
 
         setMeasuredDimension(width, height)
 
@@ -354,22 +400,30 @@ class LevelProgressBar @JvmOverloads constructor(
     }
 
 
-    private fun calculateBounds(): RectF {
-        val availableWidth = width - paddingLeft - paddingRight
-        val availableHeight = height - paddingTop - paddingBottom
+    private fun updateShaderMatrix() {
+        val scale: Float
+        var dx = 0f
+        var dy = 0f
 
-        val sideLength = min(availableWidth, availableHeight)
+        mShaderMatrix.set(null)
 
-        val left = (paddingLeft + (availableWidth - sideLength) / 2f)
-        val top = (paddingTop + (availableHeight - sideLength) / 2f)
+        if (bitmapWidth * drawableRect.height() > drawableRect.width() * bitmapHeight) {
+            scale = drawableRect.height() / bitmapHeight.toFloat()
+            dx = (drawableRect.width() - bitmapWidth * scale) * 0.5f
+        } else {
+            scale = drawableRect.width() / bitmapWidth.toFloat()
+            dy = (drawableRect.height() - bitmapHeight * scale) * 0.5f
+        }
 
-        return RectF(
-            left + (strokeWidth / 2),
-            top + (strokeWidth / 2),
-            left + sideLength - (strokeWidth / 2),
-            top + sideLength - (strokeWidth / 2)
+        mShaderMatrix.setScale(scale, scale)
+        mShaderMatrix.postTranslate(
+            (dx + 0.5f).toInt() + drawableRect.left,
+            (dy + 0.5f).toInt() + drawableRect.top
         )
+
+        bitmapShader.setLocalMatrix(mShaderMatrix)
     }
+
 
     fun setProgressWithAnimation(progress: Float) {
 
@@ -446,32 +500,15 @@ class LevelProgressBar @JvmOverloads constructor(
     }
 
     fun getBackgroundProgressColor(): Int {
-        return backgroundProgressColor
+        return progressColor
     }
 
     fun setBackgroundProgressColor(backgroundProgressColor: Int) {
 
-        if (this.backgroundProgressColor == backgroundProgressColor) {
-            return
-        }
-
-        this.backgroundProgressColor = backgroundProgressColor
+        this.bitmap = null
+        this.progressColor = backgroundProgressColor
         setup()
-
-    }
-
-    fun getProgressColor(): Int {
-        return progressColor
-    }
-
-    fun setProgressColor(progressColor: Int) {
-
-        if (this.progressColor == progressColor) {
-            return
-        }
-
-        this.progressColor = progressColor
-        setup()
+        invalidate()
     }
 
     fun getUnprogressColor(): Int {
@@ -500,7 +537,7 @@ class LevelProgressBar @JvmOverloads constructor(
 
         this.isEnable = enable
         setup()
-        invalidate()
+        requestLayout()
     }
 
 
@@ -510,7 +547,15 @@ class LevelProgressBar @JvmOverloads constructor(
         }
 
         this.isStepProgress = isStepProgress
+        setup()
         invalidate()
+    }
+
+
+    fun setImage(drawable: Int) {
+        this.bitmap = (ContextCompat.getDrawable(context!!, drawable) as BitmapDrawable).bitmap
+        setup()
+        requestLayout()
     }
 
     //</editor-fold>

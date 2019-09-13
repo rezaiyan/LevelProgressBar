@@ -39,9 +39,9 @@
 
         <attr name="spb_text_level_color" format="color" />
         <attr name="spb_text_title_color" format="color" />
-        <attr name="spb_background_progress_color" format="color" />
-        <attr name="spb_progress_color" format="color" />
+        <attr name="spb_background_color" format="color" />
         <attr name="spb_unprogress_color" format="color" />
+        <attr name="spb_src" format="reference" />
 
     </declare-styleable>
 
