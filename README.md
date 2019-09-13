@@ -2,15 +2,15 @@
 A custom view with circular step progress level  
 
 <p align="center">
-  <img src="./art/preview.gif" height="400" width="220"/>
+  <img src="./art/preview.png" height="400" width="220"/>
 </p>
 
-## Installtion
+## Installation
 
 Add the dependency to your app build.gradle file:
 
 ```
-implementation "ir.alirezaiyan:levelprogressbar:1.0.1"
+implementation "ir.alirezaiyan:levelprogressbar:1.0.2"
 ```
 
 ## Usage
@@ -31,7 +31,8 @@ Add `LevelProgressBar`:
             app:spb_is_step_progress="true"
             app:spb_level="level6"
             app:spb_text_level_color="#fff"
-            app:spb_text_title_color="#040504"/>
+            app:spb_text_title_color="#040504"
+            app:spb_src="@drawable/ic_level"/>
 ```
 
 License
