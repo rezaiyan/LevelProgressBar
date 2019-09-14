@@ -1,5 +1,5 @@
 # LevelProgressBar
-A custom view with circular step progress level
+A Custom View With Circular Progress | **Segmented** & **Continuous** |  
 
 [![Download](https://api.bintray.com/packages/rezaiyan/Android/levelprogressbar/images/download.svg)](https://bintray.com/rezaiyan/Android/levelprogressbar/_latestVersion)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-LevelProgressBar-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/7831)
