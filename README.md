@@ -24,21 +24,25 @@ implementation "ir.alirezaiyan:levelprogressbar:1.0.2"
 Add `LevelProgressBar`:
 
 ```xml
-   <ir.alirezaiyan.progressbar.LevelProgressBar
-            android:id="@+id/p1"
-            android:layout_width="150dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
-            android:layout_height="150dp"
-            app:spb_background_progress_color="#E22D9D"
-            app:spb_is_enable="true"
-            app:spb_unprogress_color="#E6E6E6"
-            app:spb_stroke_with="10"
-            app:spb_is_step_progress="true"
-            app:spb_level="level6"
-            app:spb_text_level_color="#fff"
-            app:spb_text_title_color="#040504"
-            app:spb_src="@drawable/ic_level"/>
+
+<ir.alirezaiyan.progressbar.LevelProgressBar
+                android:id="@+id/p1"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"
+                app:spb_background_color="@color/colorAccent"
+                app:spb_is_enable="true"
+                app:spb_is_step_progress="true"
+                app:spb_level="level6"
+                app:spb_stroke_with="10"
+                app:spb_src="@drawable/ic_level"
+                app:spb_text_level_color="#fff"
+                app:spb_text_title_color="#040504"
+                app:spb_unprogress_color="#E6E6E6"/>
+
+
+
 ```
 
 License
