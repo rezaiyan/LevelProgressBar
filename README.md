@@ -16,7 +16,7 @@ A Custom View With Circular Progress | **Segmented** & **Continuous** |
 Add the dependency to your app build.gradle file:
 
 ```
-implementation "ir.alirezaiyan:levelprogressbar:1.0.2"
+implementation "io.github.rezaiyan:levelprogressbar:1.0.3"
 ```
 
 ## Usage
