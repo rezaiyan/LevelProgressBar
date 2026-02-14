@@ -26,16 +26,16 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
   instrumented-tests:
     name: Instrumented UI Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        api-level: [29]
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -49,57 +49,38 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build test APKs
+        run: ./gradlew progressbar:assembleDebugAndroidTest app:assembleDebugAndroidTest
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: AVD cache
-        uses: actions/cache@v4
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
+      - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
-          script: echo "Generated AVD snapshot for caching."
-
-      - name: Run progressbar module UI tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
+          api-level: 29
           arch: x86_64
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
           disable-animations: true
-          script: ./gradlew progressbar:connectedDebugAndroidTest
-
-      - name: Run app module UI tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save
-          disable-animations: true
-          script: ./gradlew app:connectedDebugAndroidTest
+          script: |
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            ./gradlew connectedDebugAndroidTest
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.api-level }}
+          name: test-reports
           path: |
             **/build/reports/androidTests/
             **/build/outputs/androidTest-results/
