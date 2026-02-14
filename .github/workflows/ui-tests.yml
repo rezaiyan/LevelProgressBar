@@ -2,7 +2,7 @@ name: UI Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, 'claude/**' ]
   pull_request:
     branches: [ main, master ]
 
