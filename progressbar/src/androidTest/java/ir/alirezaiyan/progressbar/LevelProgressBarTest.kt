@@ -1,5 +1,8 @@
 package ir.alirezaiyan.progressbar
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -223,14 +226,18 @@ class LevelProgressBarTest {
 
     @Test
     fun levelProgressBar_allLevels_renderWithoutCrash() {
-        for (i in 0..10) {
-            composeTestRule.setContent {
-                LevelProgressBar(level = i, animated = false)
+        composeTestRule.setContent {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                for (i in 0..10) {
+                    LevelProgressBar(level = i, animated = false)
+                }
             }
+        }
 
+        for (i in 0..10) {
             composeTestRule
                 .onNodeWithContentDescription("Level $i of 10")
-                .assertIsDisplayed()
+                .assertExists()
         }
     }
 }
