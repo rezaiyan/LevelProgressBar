@@ -33,6 +33,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -92,10 +96,17 @@ fun LevelProgressBar(
 
     val alpha = if (enabled) 1f else DISABLED_ALPHA
 
+    val mode = if (isStepProgress) "step" else "continuous"
+
     Canvas(
         modifier = modifier
             .size(250.dp)
             .aspectRatio(1f)
+            .testTag("LevelProgressBar")
+            .semantics {
+                contentDescription = "Level $displayLevel of $maxLevel"
+                stateDescription = if (enabled) mode else "disabled"
+            }
     ) {
         val strokeWidthPx = strokeWidth.toPx()
         val canvasSize = min(size.width, size.height)
