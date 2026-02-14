@@ -1,40 +1,80 @@
-/*
- * Copyright 2016 alirezaiyann@gmail.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ir.alirezaiyan.levelprogressbar
 
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
-import org.junit.Assert.*
+class DemoScreenTest {
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-@RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
+
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("ir.alirezaiyan.levelprogressbar", appContext.packageName)
+    fun demoScreen_progressBarIsDisplayed() {
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun demoScreen_controlsAreVisible() {
+        composeTestRule
+            .onNodeWithText("Is Enable")
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithText("Is Step Bar")
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithText("Level: 6")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun demoScreen_strokeWidthLabelIsVisible() {
+        composeTestRule
+            .onNodeWithText("Stroke width: 10")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun demoScreen_initialLevelIsSix() {
+        composeTestRule
+            .onNodeWithText("Level: 6")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun demoScreen_toggleEnableCheckbox() {
+        composeTestRule
+            .onNodeWithText("Is Enable")
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun demoScreen_toggleStepBarCheckbox() {
+        composeTestRule
+            .onNodeWithText("Is Step Bar")
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
     }
 }
