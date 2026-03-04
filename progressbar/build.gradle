@@ -2,6 +2,8 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'app.cash.paparazzi'
+    id 'maven-publish'
+    id 'signing'
 }
 
 android {
@@ -61,4 +63,94 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+}
+
+// ---------------------------------------------------------------------------
+// Maven Central Publishing
+// ---------------------------------------------------------------------------
+
+android {
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+group = 'io.github.rezaiyan'
+version = project.findProperty('VERSION_NAME') ?: '2.0.0'
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'io.github.rezaiyan'
+                artifactId = 'levelprogressbar'
+                version = project.findProperty('VERSION_NAME') ?: '2.0.0'
+
+                pom {
+                    name = 'LevelProgressBar'
+                    description = 'A Jetpack Compose circular progress bar with continuous and segmented arc modes.'
+                    url = 'https://github.com/rezaiyan/LevelProgressBar'
+                    inceptionYear = '2020'
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'rezaiyan'
+                            name = 'Ali Rezaiyan'
+                            email = 'alirezaiyann@gmail.com'
+                            url = 'https://github.com/rezaiyan'
+                        }
+                    }
+
+                    scm {
+                        url = 'https://github.com/rezaiyan/LevelProgressBar'
+                        connection = 'scm:git:git://github.com/rezaiyan/LevelProgressBar.git'
+                        developerConnection = 'scm:git:ssh://git@github.com/rezaiyan/LevelProgressBar.git'
+                    }
+
+                    issueManagement {
+                        system = 'GitHub Issues'
+                        url = 'https://github.com/rezaiyan/LevelProgressBar/issues'
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = 'sonatype'
+                def releasesUrl = uri('https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/')
+                def snapshotsUrl = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+                url = version.toString().endsWith('SNAPSHOT') ? snapshotsUrl : releasesUrl
+
+                credentials {
+                    username = project.findProperty('SONATYPE_USERNAME') ?: System.getenv('SONATYPE_USERNAME') ?: ''
+                    password = project.findProperty('SONATYPE_PASSWORD') ?: System.getenv('SONATYPE_PASSWORD') ?: ''
+                }
+            }
+        }
+    }
+
+    signing {
+        def signingKeyId = project.findProperty('SIGNING_KEY_ID') ?: System.getenv('SIGNING_KEY_ID')
+        def signingKey = project.findProperty('SIGNING_KEY') ?: System.getenv('SIGNING_KEY')
+        def signingPassword = project.findProperty('SIGNING_PASSWORD') ?: System.getenv('SIGNING_PASSWORD')
+
+        if (signingKey != null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        }
+
+        sign publishing.publications.release
+    }
 }

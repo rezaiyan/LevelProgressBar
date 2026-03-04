@@ -2,6 +2,7 @@
 
 A Jetpack Compose circular progress bar with **continuous** and **segmented** arc modes.
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.rezaiyan/levelprogressbar.svg)](https://central.sonatype.com/artifact/io.github.rezaiyan/levelprogressbar)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 <p align="center">
@@ -255,6 +256,45 @@ Uses [Paparazzi](https://github.com/cashapp/paparazzi) for JVM screenshot tests 
 ```bash
 ./gradlew :progressbar:recordPaparazziDebug   # Record golden images
 ./gradlew :progressbar:verifyPaparazziDebug    # Verify against golden images
+```
+
+## Publishing
+
+The library publishes to **Maven Central** via Sonatype. Publishing is automated through GitHub Actions when a release tag is created.
+
+### How to release
+
+1. Update `VERSION_NAME` in `gradle.properties`
+2. Commit and push
+3. Create a GitHub release with a tag like `v2.0.0`
+4. The `publish.yml` workflow will build and upload to Maven Central
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|:---|:---|
+| `SONATYPE_USERNAME` | Sonatype OSSRH username |
+| `SONATYPE_PASSWORD` | Sonatype OSSRH password or token |
+| `SIGNING_KEY_ID` | Last 8 chars of your GPG key ID |
+| `SIGNING_KEY` | GPG private key (ASCII-armored, `gpg --export-secret-keys --armor KEY_ID`) |
+| `SIGNING_PASSWORD` | Passphrase for the GPG key |
+
+### Local publishing
+
+To publish from your machine, add credentials to `~/.gradle/gradle.properties`:
+
+```properties
+SONATYPE_USERNAME=your-username
+SONATYPE_PASSWORD=your-password
+SIGNING_KEY_ID=ABCD1234
+SIGNING_KEY=-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----
+SIGNING_PASSWORD=your-passphrase
+```
+
+Then run:
+
+```bash
+./gradlew :progressbar:publishReleasePublicationToSonatypeRepository
 ```
 
 ## License
