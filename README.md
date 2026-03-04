@@ -1,52 +1,133 @@
 # LevelProgressBar
-A Custom View With Circular Progress | **Segmented** & **Continuous** |  
 
-[![Download](https://api.bintray.com/packages/rezaiyan/Android/levelprogressbar/images/download.svg)](https://bintray.com/rezaiyan/Android/levelprogressbar/_latestVersion)
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-LevelProgressBar-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/7831)
-[![Build Status](https://travis-ci.org/rezaiyan/LevelProgressBar.svg?branch=master)](https://travis-ci.org/rezaiyan/LevelProgressBar)
-[![License](https://img.shields.io/badge/License-Apache/2.0-blue.svg)](https://github.com/badoo/Reaktive/blob/master/LICENSE)
+A Jetpack Compose circular progress bar with **Segmented** and **Continuous** modes.
 
+[![License](https://img.shields.io/badge/License-Apache/2.0-blue.svg)](https://github.com/rezaiyan/LevelProgressBar/blob/master/LICENSE)
+
+## Screenshots
+
+### Continuous Mode
+All levels from 0 to 10 rendered in continuous arc style:
 
 <p align="center">
-  <img src="./art/preview.png" height="400" width="220"/>
+  <img src="./art/screenshot_continuous.png" alt="Continuous mode levels 0-10"/>
+</p>
+
+### Step Mode
+All levels from 0 to 10 rendered in segmented step style:
+
+<p align="center">
+  <img src="./art/screenshot_step.png" alt="Step mode levels 0-10"/>
+</p>
+
+### Custom Colors
+Easily theme the progress bar with any color combination:
+
+<p align="center">
+  <img src="./art/screenshot_colors.png" alt="Custom color themes"/>
+</p>
+
+### Stroke Width Variations
+Control the arc thickness with the `strokeWidth` parameter:
+
+<p align="center">
+  <img src="./art/screenshot_stroke_widths.png" alt="Stroke width variations"/>
+</p>
+
+### Enabled vs Disabled
+Visual feedback for enabled and disabled states (both continuous and step modes):
+
+<p align="center">
+  <img src="./art/screenshot_enabled_disabled.png" alt="Enabled vs disabled states"/>
+</p>
+
+### Dark Theme
+Works on dark backgrounds:
+
+<p align="center">
+  <img src="./art/screenshot_dark_theme.png" alt="Dark theme"/>
 </p>
 
 ## Installation
 
-Add the dependency to your app build.gradle file:
+Add the dependency to your app `build.gradle` file:
 
-```
+```gradle
 implementation "io.github.rezaiyan:levelprogressbar:1.0.3"
 ```
 
 ## Usage
 
-Add `LevelProgressBar`:
-
-```xml
-
-<ir.alirezaiyan.progressbar.LevelProgressBar
-                android:id="@+id/p1"
-                android:layout_width="250dp"
-                android:layout_height="250dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"
-                app:spb_background_color="@color/colorAccent"
-                app:spb_is_enable="true"
-                app:spb_is_step_progress="true"
-                app:spb_level="level6"
-                app:spb_stroke_with="10"
-                app:spb_src="@drawable/ic_level"
-                app:spb_text_level_color="#fff"
-                app:spb_text_title_color="#040504"
-                app:spb_unprogress_color="#E6E6E6"/>
-
-
-
+```kotlin
+LevelProgressBar(
+    level = 7,
+    modifier = Modifier.size(250.dp),
+)
 ```
 
-License
---------
+### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `level` | `Int` | *required* | Current progress level |
+| `modifier` | `Modifier` | `Modifier` | Layout modifier |
+| `maxLevel` | `Int` | `10` | Maximum level cap |
+| `progressColor` | `Color` | `Color.Green` | Completed progress arc color |
+| `unProgressColor` | `Color` | `Color.Gray` | Remaining progress arc color |
+| `backgroundColor` | `Color` | `progressColor` | Inner circle background color |
+| `textColor` | `Color` | `Color.White` | Level number text color |
+| `strokeWidth` | `Dp` | `10.dp` | Arc stroke width |
+| `isStepProgress` | `Boolean` | `false` | Segmented step mode vs continuous arc |
+| `enabled` | `Boolean` | `true` | Enabled/disabled state (disabled = 40% alpha) |
+| `imageBitmap` | `ImageBitmap?` | `null` | Optional center image replacing the level text |
+| `animated` | `Boolean` | `true` | Animate progress changes |
+
+### Examples
+
+**Step mode with custom colors:**
+```kotlin
+LevelProgressBar(
+    level = 5,
+    isStepProgress = true,
+    progressColor = Color(0xFF2196F3),
+    unProgressColor = Color(0xFFBBDEFB),
+    backgroundColor = Color(0xFF2196F3),
+)
+```
+
+**Disabled state:**
+```kotlin
+LevelProgressBar(
+    level = 7,
+    enabled = false,
+)
+```
+
+**Custom stroke width:**
+```kotlin
+LevelProgressBar(
+    level = 6,
+    strokeWidth = 25.dp,
+)
+```
+
+## Screenshot Testing
+
+This project uses [Paparazzi](https://github.com/cashapp/paparazzi) for screenshot testing. Paparazzi runs on the JVM with no emulator required.
+
+**Record golden screenshots:**
+```bash
+./gradlew :progressbar:recordPaparazziDebug
+```
+
+**Verify against golden screenshots:**
+```bash
+./gradlew :progressbar:verifyPaparazziDebug
+```
+
+Golden files are stored in `progressbar/src/test/snapshots/`.
+
+## License
 
     Copyright 2020 alirezaiyann@gmail.com
 
