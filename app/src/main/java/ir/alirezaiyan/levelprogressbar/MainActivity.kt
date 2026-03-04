@@ -46,6 +46,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ir.alirezaiyan.levelprogressbar.ui.theme.LevelProgressBarTheme
 import ir.alirezaiyan.progressbar.LevelProgressBar
+import ir.alirezaiyan.progressbar.LevelProgressBarDefaults
+import ir.alirezaiyan.progressbar.ProgressMode
 
 class MainActivity : ComponentActivity() {
 
@@ -68,7 +70,7 @@ class MainActivity : ComponentActivity() {
 private fun DemoScreen() {
     var level by remember { mutableIntStateOf(6) }
     var isEnabled by remember { mutableStateOf(true) }
-    var isStepBar by remember { mutableStateOf(true) }
+    var isStepMode by remember { mutableStateOf(true) }
     var strokeWidth by remember { mutableFloatStateOf(10f) }
 
     Column(
@@ -83,11 +85,12 @@ private fun DemoScreen() {
         LevelProgressBar(
             level = level,
             modifier = Modifier.padding(16.dp),
-            progressColor = Color(0xFFD81B60),
-            unProgressColor = Color(0xFFE6E6E6),
-            textColor = Color.White,
+            colors = LevelProgressBarDefaults.colors(
+                progressColor = Color(0xFFD81B60),
+                trackColor = Color(0xFFE6E6E6),
+            ),
             strokeWidth = strokeWidth.dp,
-            isStepProgress = isStepBar,
+            mode = if (isStepMode) ProgressMode.Step else ProgressMode.Continuous,
             enabled = isEnabled,
         )
 
@@ -101,7 +104,7 @@ private fun DemoScreen() {
                 checked = isEnabled,
                 onCheckedChange = { isEnabled = it },
             )
-            Text(text = "Is Enable")
+            Text(text = "Enabled")
         }
 
         Row(
@@ -109,10 +112,10 @@ private fun DemoScreen() {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(
-                checked = isStepBar,
-                onCheckedChange = { isStepBar = it },
+                checked = isStepMode,
+                onCheckedChange = { isStepMode = it },
             )
-            Text(text = "Is Step Bar")
+            Text(text = "Step Mode")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

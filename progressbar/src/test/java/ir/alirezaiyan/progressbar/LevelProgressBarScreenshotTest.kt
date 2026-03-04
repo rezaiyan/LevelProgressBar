@@ -34,24 +34,22 @@ class LevelProgressBarScreenshotTest {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     for (level in 0..5) {
                         LevelProgressBar(
                             level = level,
                             modifier = Modifier.size(120.dp),
+                            mode = ProgressMode.Continuous,
                             animated = false,
                         )
                     }
                 }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     for (level in 6..10) {
                         LevelProgressBar(
                             level = level,
                             modifier = Modifier.size(120.dp),
+                            mode = ProgressMode.Continuous,
                             animated = false,
                         )
                     }
@@ -70,26 +68,22 @@ class LevelProgressBarScreenshotTest {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     for (level in 0..5) {
                         LevelProgressBar(
                             level = level,
                             modifier = Modifier.size(120.dp),
-                            isStepProgress = true,
+                            mode = ProgressMode.Step,
                             animated = false,
                         )
                     }
                 }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     for (level in 6..10) {
                         LevelProgressBar(
                             level = level,
                             modifier = Modifier.size(120.dp),
-                            isStepProgress = true,
+                            mode = ProgressMode.Step,
                             animated = false,
                         )
                     }
@@ -110,28 +104,31 @@ class LevelProgressBarScreenshotTest {
                 LevelProgressBar(
                     level = 7,
                     modifier = Modifier.size(150.dp),
-                    progressColor = Color(0xFF2196F3),
-                    unProgressColor = Color(0xFFBBDEFB),
-                    backgroundColor = Color(0xFF2196F3),
-                    textColor = Color.White,
+                    colors = LevelProgressBarDefaults.colors(
+                        progressColor = Color(0xFF2196F3),
+                        trackColor = Color(0xFFBBDEFB),
+                        backgroundColor = Color(0xFF2196F3),
+                    ),
                     animated = false,
                 )
                 LevelProgressBar(
                     level = 7,
                     modifier = Modifier.size(150.dp),
-                    progressColor = Color(0xFFF44336),
-                    unProgressColor = Color(0xFFFFCDD2),
-                    backgroundColor = Color(0xFFF44336),
-                    textColor = Color.White,
+                    colors = LevelProgressBarDefaults.colors(
+                        progressColor = Color(0xFFF44336),
+                        trackColor = Color(0xFFFFCDD2),
+                        backgroundColor = Color(0xFFF44336),
+                    ),
                     animated = false,
                 )
                 LevelProgressBar(
                     level = 7,
                     modifier = Modifier.size(150.dp),
-                    progressColor = Color(0xFFFF9800),
-                    unProgressColor = Color(0xFFFFE0B2),
-                    backgroundColor = Color(0xFFFF9800),
-                    textColor = Color.White,
+                    colors = LevelProgressBarDefaults.colors(
+                        progressColor = Color(0xFFFF9800),
+                        trackColor = Color(0xFFFFE0B2),
+                        backgroundColor = Color(0xFFFF9800),
+                    ),
                     animated = false,
                 )
             }
@@ -202,24 +199,26 @@ class LevelProgressBarScreenshotTest {
                     .background(Color(0xFF121212))
                     .padding(16.dp),
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     LevelProgressBar(
                         level = 5,
                         modifier = Modifier.size(150.dp),
-                        progressColor = Color(0xFF4CAF50),
-                        unProgressColor = Color(0xFF424242),
-                        backgroundColor = Color(0xFF4CAF50),
+                        colors = LevelProgressBarDefaults.colors(
+                            progressColor = Color(0xFF4CAF50),
+                            trackColor = Color(0xFF424242),
+                            backgroundColor = Color(0xFF4CAF50),
+                        ),
                         animated = false,
                     )
                     LevelProgressBar(
                         level = 5,
                         modifier = Modifier.size(150.dp),
-                        progressColor = Color(0xFF4CAF50),
-                        unProgressColor = Color(0xFF424242),
-                        backgroundColor = Color(0xFF4CAF50),
-                        isStepProgress = true,
+                        colors = LevelProgressBarDefaults.colors(
+                            progressColor = Color(0xFF4CAF50),
+                            trackColor = Color(0xFF424242),
+                            backgroundColor = Color(0xFF4CAF50),
+                        ),
+                        mode = ProgressMode.Step,
                         animated = false,
                     )
                 }

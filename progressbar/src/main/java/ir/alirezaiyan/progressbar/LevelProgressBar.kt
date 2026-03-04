@@ -17,27 +17,31 @@
 package ir.alirezaiyan.progressbar
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -46,28 +50,145 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.min
 
-private const val DEFAULT_START_ANGLE = 120f
-private const val DEFAULT_TOTAL_ANGLE = 300f
+private const val START_ANGLE = 120f
+private const val TOTAL_ANGLE = 300f
 private const val STEP_ARC_SWEEP = 10f
 private const val STEP_ARC_GAP = 30f
 private const val DISABLED_ALPHA = 0.4f
-private const val ANIMATION_DURATION_MS = 1500
 
+/**
+ * The visual mode for rendering progress arcs.
+ */
+public enum class ProgressMode {
+    /** A single continuous arc that fills proportionally. */
+    Continuous,
+
+    /** Discrete segmented steps around the arc. */
+    Step,
+}
+
+/**
+ * Color configuration for [LevelProgressBar].
+ *
+ * Use [LevelProgressBarDefaults.colors] to create instances.
+ */
+@Immutable
+public data class LevelProgressBarColors(
+    public val progressColor: Color,
+    public val trackColor: Color,
+    public val backgroundColor: Color,
+    public val textColor: Color,
+) {
+    /**
+     * Returns a copy with colors adjusted for the [enabled] state.
+     */
+    @Stable
+    internal fun forState(enabled: Boolean): ResolvedColors {
+        val alpha = if (enabled) 1f else DISABLED_ALPHA
+        return ResolvedColors(
+            progressColor = progressColor,
+            trackColor = trackColor,
+            backgroundColor = backgroundColor,
+            textColor = textColor,
+            alpha = alpha,
+        )
+    }
+}
+
+@Immutable
+internal data class ResolvedColors(
+    val progressColor: Color,
+    val trackColor: Color,
+    val backgroundColor: Color,
+    val textColor: Color,
+    val alpha: Float,
+)
+
+/**
+ * Default values and factory methods for [LevelProgressBar].
+ */
+public object LevelProgressBarDefaults {
+
+    /** Default maximum level. */
+    public const val MaxLevel: Int = 10
+
+    /** Default arc stroke width. */
+    public val StrokeWidth: Dp = 10.dp
+
+    /** Default component size. */
+    public val Size: Dp = 250.dp
+
+    /** Default progress mode. */
+    public val Mode: ProgressMode = ProgressMode.Continuous
+
+    /**
+     * Creates a [LevelProgressBarColors] with the given values.
+     *
+     * @param progressColor Color of the filled progress arc.
+     * @param trackColor Color of the unfilled track arc.
+     * @param backgroundColor Color of the inner background circle.
+     * @param textColor Color of the level number text.
+     */
+    @Composable
+    public fun colors(
+        progressColor: Color = Color.Green,
+        trackColor: Color = Color.Gray,
+        backgroundColor: Color = progressColor,
+        textColor: Color = Color.White,
+    ): LevelProgressBarColors = LevelProgressBarColors(
+        progressColor = progressColor,
+        trackColor = trackColor,
+        backgroundColor = backgroundColor,
+        textColor = textColor,
+    )
+
+    /**
+     * The default animation spec used when [animated] is true.
+     */
+    public fun animationSpec(): AnimationSpec<Float> = tween(
+        durationMillis = 1500,
+        easing = FastOutSlowInEasing,
+    )
+}
+
+/**
+ * A circular progress bar that displays a level within a range.
+ *
+ * Supports two visual modes:
+ * - [ProgressMode.Continuous]: A single arc that fills proportionally.
+ * - [ProgressMode.Step]: Discrete segmented arcs around the circle.
+ *
+ * The center of the circle displays the current level number by default.
+ * Provide [content] to replace the default text with custom content
+ * (e.g., an icon or image).
+ *
+ * @param level Current progress level, clamped to `0..maxLevel`.
+ * @param modifier Modifier for the root layout.
+ * @param maxLevel Maximum level (inclusive). Must be > 0.
+ * @param colors Color configuration. Use [LevelProgressBarDefaults.colors].
+ * @param strokeWidth Width of the progress arc stroke.
+ * @param mode Visual rendering mode (continuous arc or discrete steps).
+ * @param enabled Whether the component is enabled. Disabled state reduces alpha.
+ * @param animated Whether level changes animate or snap immediately.
+ * @param animationSpec Animation spec used when [animated] is true.
+ * @param content Optional composable slot for custom center content.
+ *   When null, the level number is drawn as text.
+ */
 @Composable
-fun LevelProgressBar(
+public fun LevelProgressBar(
     level: Int,
     modifier: Modifier = Modifier,
-    maxLevel: Int = 10,
-    progressColor: Color = Color.Green,
-    unProgressColor: Color = Color.Gray,
-    backgroundColor: Color = progressColor,
-    textColor: Color = Color.White,
-    strokeWidth: Dp = 10.dp,
-    isStepProgress: Boolean = false,
+    maxLevel: Int = LevelProgressBarDefaults.MaxLevel,
+    colors: LevelProgressBarColors = LevelProgressBarDefaults.colors(),
+    strokeWidth: Dp = LevelProgressBarDefaults.StrokeWidth,
+    mode: ProgressMode = LevelProgressBarDefaults.Mode,
     enabled: Boolean = true,
-    imageBitmap: ImageBitmap? = null,
     animated: Boolean = true,
+    animationSpec: AnimationSpec<Float> = LevelProgressBarDefaults.animationSpec(),
+    content: (@Composable (level: Int) -> Unit)? = null,
 ) {
+    require(maxLevel > 0) { "maxLevel must be > 0, was $maxLevel" }
+
     val coercedLevel = level.coerceIn(0, maxLevel)
     val targetProgress = coercedLevel.toFloat() / maxLevel.toFloat()
 
@@ -77,117 +198,146 @@ fun LevelProgressBar(
         if (animated) {
             animatedProgress.animateTo(
                 targetValue = targetProgress,
-                animationSpec = tween(
-                    durationMillis = ANIMATION_DURATION_MS,
-                    easing = FastOutSlowInEasing
-                )
+                animationSpec = animationSpec,
             )
         } else {
             animatedProgress.snapTo(targetProgress)
         }
     }
 
-    val textMeasurer = rememberTextMeasurer()
     val displayLevel = if (animated) {
         (animatedProgress.value * maxLevel).toInt()
     } else {
         coercedLevel
     }
 
-    val alpha = if (enabled) 1f else DISABLED_ALPHA
+    val resolved = colors.forState(enabled)
+    val modeLabel = when (mode) {
+        ProgressMode.Step -> "step"
+        ProgressMode.Continuous -> "continuous"
+    }
 
-    val mode = if (isStepProgress) "step" else "continuous"
-
-    Canvas(
+    Box(
         modifier = modifier
-            .size(250.dp)
+            .size(LevelProgressBarDefaults.Size)
             .aspectRatio(1f)
             .testTag("LevelProgressBar")
             .semantics {
                 contentDescription = "Level $displayLevel of $maxLevel"
-                stateDescription = if (enabled) mode else "disabled"
-            }
+                stateDescription = if (enabled) modeLabel else "disabled"
+                progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo(
+                    current = coercedLevel.toFloat(),
+                    range = 0f..maxLevel.toFloat(),
+                    steps = maxLevel - 1,
+                )
+            },
+        contentAlignment = Alignment.Center,
     ) {
-        val strokeWidthPx = strokeWidth.toPx()
-        val canvasSize = min(size.width, size.height)
-        val radius = canvasSize / 2.5f
-        val center = Offset(size.width / 2f, size.height / 2f)
+        val textMeasurer = rememberTextMeasurer()
 
-        val arcRect = Size(
-            canvasSize - strokeWidthPx * 2,
-            canvasSize - strokeWidthPx * 2
-        )
-        val arcTopLeft = Offset(
-            (size.width - arcRect.width) / 2f,
-            (size.height - arcRect.height) / 2f
-        )
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val strokeWidthPx = strokeWidth.toPx()
+            val canvasSize = min(size.width, size.height)
+            val radius = canvasSize / 2.5f
+            val center = Offset(size.width / 2f, size.height / 2f)
 
-        // Draw background circle
-        drawCircle(
-            color = if (imageBitmap != null) backgroundColor else backgroundColor,
-            radius = radius - strokeWidthPx,
-            center = center,
-            alpha = alpha
-        )
-
-        // Draw image bitmap if provided
-        if (imageBitmap != null) {
-            val imageSize = (radius - strokeWidthPx) * 2
-            val scale = imageSize / min(imageBitmap.width, imageBitmap.height).toFloat()
-            val scaledWidth = imageBitmap.width * scale
-            val scaledHeight = imageBitmap.height * scale
-
-            drawImage(
-                image = imageBitmap,
-                dstOffset = androidx.compose.ui.unit.IntOffset(
-                    ((size.width - scaledWidth) / 2f).toInt(),
-                    ((size.height - scaledHeight) / 2f).toInt()
-                ),
-                dstSize = androidx.compose.ui.unit.IntSize(
-                    scaledWidth.toInt(),
-                    scaledHeight.toInt()
-                ),
-                alpha = alpha
+            val arcRect = Size(
+                canvasSize - strokeWidthPx * 2,
+                canvasSize - strokeWidthPx * 2,
             )
-        }
-
-        val currentAngle = DEFAULT_TOTAL_ANGLE * animatedProgress.value
-
-        if (isStepProgress) {
-            drawStepProgress(
-                arcTopLeft = arcTopLeft,
-                arcSize = arcRect,
-                currentAngle = currentAngle,
-                strokeWidthPx = strokeWidthPx,
-                progressColor = progressColor,
-                unProgressColor = unProgressColor,
-                alpha = alpha
+            val arcTopLeft = Offset(
+                (size.width - arcRect.width) / 2f,
+                (size.height - arcRect.height) / 2f,
             )
-        } else {
-            drawContinuousProgress(
-                arcTopLeft = arcTopLeft,
-                arcSize = arcRect,
-                currentAngle = currentAngle,
-                strokeWidthPx = strokeWidthPx,
-                progressColor = progressColor,
-                unProgressColor = unProgressColor,
-                alpha = alpha
-            )
-        }
 
-        // Draw level text if no image
-        if (imageBitmap == null) {
-            drawLevelText(
-                textMeasurer = textMeasurer,
-                level = displayLevel,
+            drawCircle(
+                color = resolved.backgroundColor,
+                radius = radius - strokeWidthPx,
                 center = center,
-                radius = radius,
-                textColor = textColor,
-                alpha = alpha
+                alpha = resolved.alpha,
             )
+
+            val currentAngle = TOTAL_ANGLE * animatedProgress.value
+
+            when (mode) {
+                ProgressMode.Step -> drawStepProgress(
+                    arcTopLeft = arcTopLeft,
+                    arcSize = arcRect,
+                    currentAngle = currentAngle,
+                    strokeWidthPx = strokeWidthPx,
+                    progressColor = resolved.progressColor,
+                    trackColor = resolved.trackColor,
+                    alpha = resolved.alpha,
+                )
+                ProgressMode.Continuous -> drawContinuousProgress(
+                    arcTopLeft = arcTopLeft,
+                    arcSize = arcRect,
+                    currentAngle = currentAngle,
+                    strokeWidthPx = strokeWidthPx,
+                    progressColor = resolved.progressColor,
+                    trackColor = resolved.trackColor,
+                    alpha = resolved.alpha,
+                )
+            }
+
+            if (content == null) {
+                drawLevelText(
+                    textMeasurer = textMeasurer,
+                    level = displayLevel,
+                    center = center,
+                    radius = radius,
+                    textColor = resolved.textColor,
+                    alpha = resolved.alpha,
+                )
+            }
+        }
+
+        if (content != null) {
+            content(displayLevel)
         }
     }
 }
+
+/**
+ * Backward-compatible overload using individual color parameters.
+ *
+ * Prefer the primary overload with [LevelProgressBarColors] for new code.
+ */
+@Composable
+public fun LevelProgressBar(
+    level: Int,
+    modifier: Modifier = Modifier,
+    maxLevel: Int = LevelProgressBarDefaults.MaxLevel,
+    progressColor: Color = Color.Green,
+    unProgressColor: Color = Color.Gray,
+    backgroundColor: Color = progressColor,
+    textColor: Color = Color.White,
+    strokeWidth: Dp = LevelProgressBarDefaults.StrokeWidth,
+    isStepProgress: Boolean = false,
+    enabled: Boolean = true,
+    @Suppress("UNUSED_PARAMETER") imageBitmap: androidx.compose.ui.graphics.ImageBitmap? = null,
+    animated: Boolean = true,
+) {
+    LevelProgressBar(
+        level = level,
+        modifier = modifier,
+        maxLevel = maxLevel,
+        colors = LevelProgressBarColors(
+            progressColor = progressColor,
+            trackColor = unProgressColor,
+            backgroundColor = backgroundColor,
+            textColor = textColor,
+        ),
+        strokeWidth = strokeWidth,
+        mode = if (isStepProgress) ProgressMode.Step else ProgressMode.Continuous,
+        enabled = enabled,
+        animated = animated,
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Internal drawing helpers
+// ---------------------------------------------------------------------------
 
 private fun DrawScope.drawContinuousProgress(
     arcTopLeft: Offset,
@@ -195,35 +345,32 @@ private fun DrawScope.drawContinuousProgress(
     currentAngle: Float,
     strokeWidthPx: Float,
     progressColor: Color,
-    unProgressColor: Color,
+    trackColor: Color,
     alpha: Float,
 ) {
-    // Progress arc
     if (currentAngle > 0f) {
         drawArc(
             color = progressColor,
-            startAngle = DEFAULT_START_ANGLE,
+            startAngle = START_ANGLE,
             sweepAngle = currentAngle,
             useCenter = false,
             topLeft = arcTopLeft,
             size = arcSize,
             style = Stroke(width = strokeWidthPx, cap = StrokeCap.Butt),
-            alpha = alpha
+            alpha = alpha,
         )
     }
-
-    // Remaining arc
-    val remainingAngle = DEFAULT_TOTAL_ANGLE - currentAngle
+    val remainingAngle = TOTAL_ANGLE - currentAngle
     if (remainingAngle > 0f) {
         drawArc(
-            color = unProgressColor,
-            startAngle = DEFAULT_START_ANGLE + currentAngle,
+            color = trackColor,
+            startAngle = START_ANGLE + currentAngle,
             sweepAngle = remainingAngle,
             useCenter = false,
             topLeft = arcTopLeft,
             size = arcSize,
             style = Stroke(width = strokeWidthPx, cap = StrokeCap.Butt),
-            alpha = alpha
+            alpha = alpha,
         )
     }
 }
@@ -234,28 +381,28 @@ private fun DrawScope.drawStepProgress(
     currentAngle: Float,
     strokeWidthPx: Float,
     progressColor: Color,
-    unProgressColor: Color,
+    trackColor: Color,
     alpha: Float,
 ) {
     var step = STEP_ARC_SWEEP
-    while (step <= DEFAULT_TOTAL_ANGLE) {
-        val color = if (step <= currentAngle) progressColor else unProgressColor
+    while (step <= TOTAL_ANGLE) {
+        val color = if (step <= currentAngle) progressColor else trackColor
         drawArc(
             color = color,
-            startAngle = DEFAULT_START_ANGLE + step,
+            startAngle = START_ANGLE + step,
             sweepAngle = STEP_ARC_SWEEP,
             useCenter = false,
             topLeft = arcTopLeft,
             size = arcSize,
             style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round),
-            alpha = alpha
+            alpha = alpha,
         )
         step += STEP_ARC_GAP
     }
 }
 
 private fun DrawScope.drawLevelText(
-    textMeasurer: TextMeasurer,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
     level: Int,
     center: Offset,
     radius: Float,
@@ -275,7 +422,7 @@ private fun DrawScope.drawLevelText(
         topLeft = Offset(
             x = center.x - textLayoutResult.size.width / 2f,
             y = center.y - textLayoutResult.size.height / 2f,
-        )
+        ),
     )
 }
 

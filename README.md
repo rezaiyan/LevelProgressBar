@@ -53,61 +53,123 @@ Works on dark backgrounds:
 Add the dependency to your app `build.gradle` file:
 
 ```gradle
-implementation "io.github.rezaiyan:levelprogressbar:1.0.3"
+implementation "io.github.rezaiyan:levelprogressbar:2.0.0"
 ```
 
-## Usage
+## Quick Start
 
 ```kotlin
 LevelProgressBar(
     level = 7,
-    modifier = Modifier.size(250.dp),
 )
 ```
+
+## API
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `level` | `Int` | *required* | Current progress level |
+| `level` | `Int` | *required* | Current progress level, clamped to `0..maxLevel` |
 | `modifier` | `Modifier` | `Modifier` | Layout modifier |
-| `maxLevel` | `Int` | `10` | Maximum level cap |
-| `progressColor` | `Color` | `Color.Green` | Completed progress arc color |
-| `unProgressColor` | `Color` | `Color.Gray` | Remaining progress arc color |
-| `backgroundColor` | `Color` | `progressColor` | Inner circle background color |
-| `textColor` | `Color` | `Color.White` | Level number text color |
+| `maxLevel` | `Int` | `10` | Maximum level (must be > 0) |
+| `colors` | `LevelProgressBarColors` | `LevelProgressBarDefaults.colors()` | Color configuration |
 | `strokeWidth` | `Dp` | `10.dp` | Arc stroke width |
-| `isStepProgress` | `Boolean` | `false` | Segmented step mode vs continuous arc |
-| `enabled` | `Boolean` | `true` | Enabled/disabled state (disabled = 40% alpha) |
-| `imageBitmap` | `ImageBitmap?` | `null` | Optional center image replacing the level text |
-| `animated` | `Boolean` | `true` | Animate progress changes |
+| `mode` | `ProgressMode` | `Continuous` | `ProgressMode.Continuous` or `ProgressMode.Step` |
+| `enabled` | `Boolean` | `true` | Disabled state reduces alpha to 40% |
+| `animated` | `Boolean` | `true` | Animate level changes |
+| `animationSpec` | `AnimationSpec<Float>` | `tween(1500ms)` | Custom animation spec |
+| `content` | `@Composable ((Int) -> Unit)?` | `null` | Slot for custom center content (replaces default text) |
 
-### Examples
+### Colors
 
-**Step mode with custom colors:**
-```kotlin
-LevelProgressBar(
-    level = 5,
-    isStepProgress = true,
-    progressColor = Color(0xFF2196F3),
-    unProgressColor = Color(0xFFBBDEFB),
-    backgroundColor = Color(0xFF2196F3),
-)
-```
+Use `LevelProgressBarDefaults.colors()` to configure colors:
 
-**Disabled state:**
 ```kotlin
 LevelProgressBar(
     level = 7,
-    enabled = false,
+    colors = LevelProgressBarDefaults.colors(
+        progressColor = Color(0xFF2196F3),  // Filled arc
+        trackColor = Color(0xFFBBDEFB),     // Unfilled arc
+        backgroundColor = Color(0xFF2196F3), // Inner circle
+        textColor = Color.White,             // Level number
+    ),
 )
 ```
 
-**Custom stroke width:**
+### Progress Mode
+
+```kotlin
+// Continuous arc (default)
+LevelProgressBar(
+    level = 5,
+    mode = ProgressMode.Continuous,
+)
+
+// Segmented steps
+LevelProgressBar(
+    level = 5,
+    mode = ProgressMode.Step,
+)
+```
+
+### Custom Center Content
+
+Replace the default level text with any composable:
+
 ```kotlin
 LevelProgressBar(
-    level = 6,
-    strokeWidth = 25.dp,
+    level = 7,
+) { currentLevel ->
+    Icon(
+        imageVector = Icons.Default.Star,
+        contentDescription = null,
+        tint = Color.White,
+    )
+}
+```
+
+### Custom Animation
+
+```kotlin
+LevelProgressBar(
+    level = 7,
+    animationSpec = spring(dampingRatio = 0.6f),
+)
+```
+
+### Defaults Object
+
+All defaults are accessible via `LevelProgressBarDefaults`:
+
+| Constant | Value |
+|---|---|
+| `MaxLevel` | `10` |
+| `StrokeWidth` | `10.dp` |
+| `Size` | `250.dp` |
+| `Mode` | `ProgressMode.Continuous` |
+
+## Migration from 1.x
+
+The 1.x individual color parameters still work via a backward-compatible overload:
+
+```kotlin
+// 1.x style - still works
+LevelProgressBar(
+    level = 5,
+    progressColor = Color.Red,
+    unProgressColor = Color.LightGray,
+    isStepProgress = true,
+)
+
+// 2.x style - recommended
+LevelProgressBar(
+    level = 5,
+    colors = LevelProgressBarDefaults.colors(
+        progressColor = Color.Red,
+        trackColor = Color.LightGray,
+    ),
+    mode = ProgressMode.Step,
 )
 ```
 

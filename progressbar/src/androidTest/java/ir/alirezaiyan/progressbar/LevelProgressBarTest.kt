@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -24,6 +24,10 @@ class LevelProgressBarTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    // -----------------------------------------------------------------------
+    // Display tests
+    // -----------------------------------------------------------------------
 
     @Test
     fun levelProgressBar_defaultParams_isDisplayed() {
@@ -102,10 +106,18 @@ class LevelProgressBarTest {
             .assertIsDisplayed()
     }
 
+    // -----------------------------------------------------------------------
+    // State / mode tests
+    // -----------------------------------------------------------------------
+
     @Test
     fun levelProgressBar_stepMode_hasStepState() {
         composeTestRule.setContent {
-            LevelProgressBar(level = 5, isStepProgress = true, animated = false)
+            LevelProgressBar(
+                level = 5,
+                mode = ProgressMode.Step,
+                animated = false,
+            )
         }
 
         composeTestRule
@@ -118,7 +130,11 @@ class LevelProgressBarTest {
     @Test
     fun levelProgressBar_continuousMode_hasContinuousState() {
         composeTestRule.setContent {
-            LevelProgressBar(level = 5, isStepProgress = false, animated = false)
+            LevelProgressBar(
+                level = 5,
+                mode = ProgressMode.Continuous,
+                animated = false,
+            )
         }
 
         composeTestRule
@@ -141,15 +157,21 @@ class LevelProgressBarTest {
             )
     }
 
+    // -----------------------------------------------------------------------
+    // Colors API tests
+    // -----------------------------------------------------------------------
+
     @Test
     fun levelProgressBar_customColors_isDisplayed() {
         composeTestRule.setContent {
             LevelProgressBar(
                 level = 5,
-                progressColor = Color.Red,
-                unProgressColor = Color.LightGray,
-                backgroundColor = Color.DarkGray,
-                textColor = Color.Yellow,
+                colors = LevelProgressBarDefaults.colors(
+                    progressColor = Color.Red,
+                    trackColor = Color.LightGray,
+                    backgroundColor = Color.DarkGray,
+                    textColor = Color.Yellow,
+                ),
                 animated = false,
             )
         }
@@ -173,6 +195,10 @@ class LevelProgressBarTest {
             .onNodeWithTag("LevelProgressBar")
             .assertIsDisplayed()
     }
+
+    // -----------------------------------------------------------------------
+    // Dynamic update tests
+    // -----------------------------------------------------------------------
 
     @Test
     fun levelProgressBar_levelUpdate_updatesSemantics() {
@@ -211,7 +237,7 @@ class LevelProgressBarTest {
         composeTestRule.setContent {
             LevelProgressBar(
                 level = 5,
-                isStepProgress = true,
+                mode = ProgressMode.Step,
                 enabled = false,
                 animated = false,
             )
@@ -239,5 +265,68 @@ class LevelProgressBarTest {
                 .onNodeWithContentDescription("Level $i of 10")
                 .assertExists()
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Semantics: progressBarRangeInfo
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun levelProgressBar_hasProgressBarRangeInfo() {
+        composeTestRule.setContent {
+            LevelProgressBar(level = 7, maxLevel = 10, animated = false)
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.ProgressBarRangeInfo,
+                    ProgressBarRangeInfo(
+                        current = 7f,
+                        range = 0f..10f,
+                        steps = 9,
+                    )
+                )
+            )
+    }
+
+    // -----------------------------------------------------------------------
+    // Backward-compatible overload tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun levelProgressBar_legacyApi_isStepProgress_works() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 5,
+                isStepProgress = true,
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "step")
+            )
+    }
+
+    @Test
+    fun levelProgressBar_legacyApi_individualColors_works() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 5,
+                progressColor = Color.Red,
+                unProgressColor = Color.LightGray,
+                backgroundColor = Color.DarkGray,
+                textColor = Color.Yellow,
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
     }
 }
