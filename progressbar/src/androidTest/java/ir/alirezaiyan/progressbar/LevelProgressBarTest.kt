@@ -1,6 +1,7 @@
 package ir.alirezaiyan.progressbar
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
@@ -8,6 +9,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -16,7 +18,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.junit.Rule
 import org.junit.Test
 
@@ -197,6 +202,87 @@ class LevelProgressBarTest {
     }
 
     // -----------------------------------------------------------------------
+    // New parameter tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun levelProgressBar_customStrokeCap_isDisplayed() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 6,
+                strokeCap = StrokeCap.Butt,
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun levelProgressBar_customArcGeometry_isDisplayed() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 7,
+                startAngle = 180f,
+                sweepAngle = 180f,
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun levelProgressBar_customTextStyle_isDisplayed() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 5,
+                textStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Light),
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun levelProgressBar_formatLevel_isDisplayed() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 7,
+                maxLevel = 10,
+                formatLevel = { "$it/10" },
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun levelProgressBar_explicitSmallSize_isDisplayed() {
+        composeTestRule.setContent {
+            LevelProgressBar(
+                level = 5,
+                modifier = Modifier.size(80.dp),
+                animated = false,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithTag("LevelProgressBar")
+            .assertIsDisplayed()
+    }
+
+    // -----------------------------------------------------------------------
     // Dynamic update tests
     // -----------------------------------------------------------------------
 
@@ -295,6 +381,7 @@ class LevelProgressBarTest {
     // Backward-compatible overload tests
     // -----------------------------------------------------------------------
 
+    @Suppress("DEPRECATION")
     @Test
     fun levelProgressBar_legacyApi_isStepProgress_works() {
         composeTestRule.setContent {
@@ -312,6 +399,7 @@ class LevelProgressBarTest {
             )
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun levelProgressBar_legacyApi_individualColors_works() {
         composeTestRule.setContent {

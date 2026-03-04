@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.junit.Rule
 import org.junit.Test
 
@@ -222,6 +226,111 @@ class LevelProgressBarScreenshotTest {
                         animated = false,
                     )
                 }
+            }
+        }
+    }
+
+    @Test
+    fun arcGeometryVariations() {
+        paparazzi.snapshot {
+            Row(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // Half circle
+                LevelProgressBar(
+                    level = 7,
+                    modifier = Modifier.size(150.dp),
+                    startAngle = 180f,
+                    sweepAngle = 180f,
+                    animated = false,
+                )
+                // Full circle
+                LevelProgressBar(
+                    level = 7,
+                    modifier = Modifier.size(150.dp),
+                    startAngle = 270f,
+                    sweepAngle = 360f,
+                    animated = false,
+                )
+                // Default (300 degree)
+                LevelProgressBar(
+                    level = 7,
+                    modifier = Modifier.size(150.dp),
+                    animated = false,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun formatLevelVariations() {
+        paparazzi.snapshot {
+            Row(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LevelProgressBar(
+                    level = 7,
+                    modifier = Modifier.size(150.dp),
+                    formatLevel = { "$it%" },
+                    animated = false,
+                )
+                LevelProgressBar(
+                    level = 7,
+                    maxLevel = 10,
+                    modifier = Modifier.size(150.dp),
+                    formatLevel = { "$it/10" },
+                    animated = false,
+                )
+                LevelProgressBar(
+                    level = 3,
+                    maxLevel = 5,
+                    modifier = Modifier.size(150.dp),
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Light,
+                    ),
+                    animated = false,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun strokeCapVariations() {
+        paparazzi.snapshot {
+            Row(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LevelProgressBar(
+                    level = 6,
+                    modifier = Modifier.size(150.dp),
+                    strokeCap = StrokeCap.Round,
+                    strokeWidth = 14.dp,
+                    animated = false,
+                )
+                LevelProgressBar(
+                    level = 6,
+                    modifier = Modifier.size(150.dp),
+                    strokeCap = StrokeCap.Butt,
+                    strokeWidth = 14.dp,
+                    animated = false,
+                )
+                LevelProgressBar(
+                    level = 6,
+                    modifier = Modifier.size(150.dp),
+                    strokeCap = StrokeCap.Square,
+                    strokeWidth = 14.dp,
+                    animated = false,
+                )
             }
         }
     }
